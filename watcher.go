@@ -41,6 +41,7 @@ func NewWatcher(names []NameValue) (*Watcher, error) {
 	}
 	w.ch = make(chan *WatcherEvent)
 	w.extraData = make(map[string]interface{})
+	w.w = fsw
 
 	for i := 0; i < len(names); i++ {
 		name := names[i].Name
