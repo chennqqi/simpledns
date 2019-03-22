@@ -23,7 +23,7 @@ func (s *Server) Init(cfg *Config) error {
 		// Address to listen on, ":dns" if empty.
 		Addr: cfg.Addr, //""
 		// if "tcp" or "tcp-tls" (DNS over TLS) it will invoke a TCP listener, otherwise an UDP one
-		Net: "tcp",
+		Net: "udp",
 
 		// The net.Conn.SetReadTimeout value for new connections, defaults to 2 * time.Second.
 		ReadTimeout: 5 * time.Second,
@@ -33,10 +33,11 @@ func (s *Server) Init(cfg *Config) error {
 	}
 
 	//new server
+	logrus.Println("servers:", cfg.Servers, len(cfg.Servers))
 	for i := 0; i < len(cfg.Servers); i++ {
 		sv := &cfg.Servers[i]
-		ms[sv.Name] = nil
 		ns, err := NewNameServer(sv.VZones)
+		logrus.Println("server:", ns, err)
 		if err != nil {
 			return err
 		}
@@ -46,6 +47,7 @@ func (s *Server) Init(cfg *Config) error {
 		} else {
 			ms[sv.Name] = ns
 			dns.Handle(sv.Name, ns)
+			logrus.Println("Add handle", sv.Name, ns)
 			for j := 0; j < len(ns.servers); j++ {
 				watchValues = append(watchValues, NameValue{
 					sv.VZones[j].File,
@@ -77,6 +79,7 @@ func (s *Server) Init(cfg *Config) error {
 
 	s.watcher = watcher
 	s.server = server
+    s.serverMap  = ms
 	//new watcher
 	return nil
 }

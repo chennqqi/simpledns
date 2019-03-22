@@ -41,8 +41,10 @@ func ReadTxt(file string) ([]byte, error) {
 			return nil, errors.New("consul not set")
 		} else if err != nil {
 			return nil, err
+		} else if u.Path != "" {
+			return gconsul.Get(u.Path[1:])
 		} else {
-			return gconsul.Get(u.Path)
+			return nil, errors.New("consul path is nil")
 		}
 	} else {
 		return ioutil.ReadFile(file)

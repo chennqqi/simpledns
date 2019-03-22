@@ -28,9 +28,14 @@ func NewNameServer(vzones []VZone) (*NameServer, error) {
 		zs.zone = z
 		txt, err := ReadTxt(z.File)
 		if err != nil {
+			logrus.Errorf("[nameserver.go::NewNameServer] ReadTxt (%v) error: %v", z.File, err)
 			return nil, err
 		}
-		zs.Update(txt)
+		err = zs.Update(txt)
+		if err!=nil{
+			logrus.Errorf("[nameserver.go::NewNameServer] Update zone (%v) error: %v", z.File, err)
+			return nil, err
+		}
 
 		ranger := cidranger.NewPCTrieRanger()
 		for j := 0; j < len(z.MatchClients); j++ {
@@ -54,17 +59,21 @@ func NewNameServer(vzones []VZone) (*NameServer, error) {
 func (s *NameServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	//no locking code
 	servers := s.servers
+	logrus.Println("servers count:", len(servers))
 	for i := 0; i < len(servers); i++ {
 		server := servers[i]
 		addr := w.RemoteAddr()
 		ip := addr.(*net.TCPAddr).IP
 		contain, _ := server.ranger.Contains(ip)
+		logrus.Println("remoteaddr:", addr, contain)
+		logrus.Println("remoteip:", ip, contain)
 		if contain {
 			server.handleRequest(w, r)
 			return
 		}
 	}
 	//return empty
+	logrus.Infof("[nameserver.go::NameServer.ServeDNS] mis match ip")
 	m := new(dns.Msg)
 	m.SetReply(r)
 	w.WriteMsg(m)
