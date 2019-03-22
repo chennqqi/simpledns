@@ -31,7 +31,7 @@ type Config struct {
 	LogFile  string         `json:"log_file" yaml:"log_file"`
 	LogLevel string         `json:"log_level" yaml:"log_level"`
 	Addr     string         `json:"addr" yaml:"addr" default:""`
-	Health   string         `json:"health" yaml:"health"`
+	HealthHost   string         `json:"health" yaml:"health"`
 }
 
 func ReadTxt(file string) ([]byte, error) {
