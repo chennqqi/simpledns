@@ -41,7 +41,7 @@ func main() {
 	}
 
 	logfile, err := logrotate.New(cfg.LogFile, 86400, 7, 0, false)
-	if err == nil {
+	if cfg.LogFile != strings.ToLower("console") && err == nil {
 		logrus.SetOutput(logfile)
 	}
 

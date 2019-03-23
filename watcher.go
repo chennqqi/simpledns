@@ -33,12 +33,13 @@ type Watcher struct {
 	stopChan chan struct{}
 }
 
-func NewWatcher(names []NameValue) (*Watcher, error) {
+func NewWatcher(names []NameValue, c *consul.ConsulOperator) (*Watcher, error) {
 	var w Watcher
 	fsw, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
+	w.c = c
 	w.ch = make(chan *WatcherEvent)
 	w.extraData = make(map[string]interface{})
 	w.w = fsw
@@ -56,6 +57,10 @@ func NewWatcher(names []NameValue) (*Watcher, error) {
 			fsw.Add(name)
 		}
 		w.extraData[name] = names[i].Extra
+	}
+	for i := 0; i < len(w.consulNames); i++ {
+		_, index, _ := c.GetEx(w.consulNames[i])
+		w.consulIndexs = append(w.consulIndexs, index)
 	}
 	return &w, nil
 }

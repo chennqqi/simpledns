@@ -23,7 +23,7 @@ func (s *Server) Init(cfg *Config) error {
 		// Address to listen on, ":dns" if empty.
 		Addr: cfg.Addr, //""
 		// if "tcp" or "tcp-tls" (DNS over TLS) it will invoke a TCP listener, otherwise an UDP one
-		Net: "tcp",
+		Net: "udp",
 
 		// The net.Conn.SetReadTimeout value for new connections, defaults to 2 * time.Second.
 		ReadTimeout: 5 * time.Second,
@@ -35,7 +35,6 @@ func (s *Server) Init(cfg *Config) error {
 	//new server
 	for i := 0; i < len(cfg.Servers); i++ {
 		sv := &cfg.Servers[i]
-		ms[sv.Name] = nil
 		ns, err := NewNameServer(sv.VZones)
 		if err != nil {
 			return err
@@ -66,11 +65,12 @@ func (s *Server) Init(cfg *Config) error {
 				logrus.Errorf("[server.go::Server.Init] ignore duplicate forward name: %v", sv.Name)
 			} else {
 				ms[sv.Name] = up
+				logrus.Println("handle:", sv.Name, up)
 				dns.Handle(sv.Name, up)
 			}
 		}
 	}
-	watcher, err := NewWatcher(watchValues)
+	watcher, err := NewWatcher(watchValues, gconsul.ConsulOperator)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,6 @@ func (s *Server) update() {
 			break
 		}
 		logrus.Infof("[server.go::Server.update] ProcessUpdate %v", e)
-
 		v := e.Extra
 		if v == nil {
 			continue
@@ -102,9 +101,10 @@ func (s *Server) update() {
 
 func (s *Server) Shutdown() error {
 	//TODO: context
+	logrus.Println("stopWatcher")
 	s.watcher.Stop()
-	s.server.Shutdown()
-	return nil
+	logrus.Println("stopServer")
+	return s.server.Shutdown()
 }
 
 func (s *Server) Run() error {

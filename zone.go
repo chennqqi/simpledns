@@ -88,6 +88,8 @@ func (s *ZoneServer) Update(txt []byte) error {
 
 		rrArray, exist := rrs[rr.Header().Name]
 		if exist {
+			logrus.Println("rrarray", rrArray)
+			logrus.Println("rr", rr)
 			if rrArray[0].Header().Rrtype != rr.Header().Rrtype {
 				logrus.Warnf("[server.go:ZoneServer.Update] ignore duplicate name(%v) type(%v), expect %v", rr.Header().Name,
 					rr.Header().Rrtype, rrArray[0].Header().Rrtype)
@@ -96,7 +98,7 @@ func (s *ZoneServer) Update(txt []byte) error {
 			rrArray = append(rrArray, rr)
 			rrs[rr.Header().Name] = rrArray
 		} else {
-			rrArray := make([]dns.RR, 1)
+			var rrArray []dns.RR
 			rrArray = append(rrArray, rr)
 			rrs[rr.Header().Name] = rrArray
 		}
