@@ -1,19 +1,18 @@
 package main
 
 import (
+	"context"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-
 	"github.com/chennqqi/goutils/consul"
 	"github.com/miekg/dns"
 )
 
 type Server struct {
-	serverMap map[string]DomainNameServer
-	server    *dns.Server
-	c         *consul.ConsulApp
-	watcher   *Watcher
+	server  *dns.Server
+	c       *consul.ConsulApp
+	watcher *Watcher
 }
 
 func (s *Server) Init(cfg *Config) error {
@@ -65,7 +64,6 @@ func (s *Server) Init(cfg *Config) error {
 				logrus.Errorf("[server.go::Server.Init] ignore duplicate forward name: %v", sv.Name)
 			} else {
 				ms[sv.Name] = up
-				logrus.Println("handle:", sv.Name, up)
 				dns.Handle(sv.Name, up)
 			}
 		}
@@ -99,18 +97,12 @@ func (s *Server) update() {
 	}
 }
 
-func (s *Server) Shutdown() error {
-	//TODO: context
-	logrus.Println("stopWatcher")
+func (s *Server) Shutdown(ctx context.Context) error {
 	s.watcher.Stop()
-	logrus.Println("stopServer")
-	return s.server.Shutdown()
+	return s.server.ShutdownContext(ctx)
 }
 
 func (s *Server) Run() error {
-	for name, s := range s.serverMap {
-		dns.Handle(name, s)
-	}
 	go s.watcher.Run()
 
 	server := s.server

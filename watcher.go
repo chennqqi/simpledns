@@ -42,6 +42,7 @@ func NewWatcher(names []NameValue, c *consul.ConsulOperator) (*Watcher, error) {
 	w.c = c
 	w.ch = make(chan *WatcherEvent)
 	w.extraData = make(map[string]interface{})
+	w.stopChan = make(chan struct{})
 	w.w = fsw
 
 	for i := 0; i < len(names); i++ {
@@ -70,11 +71,12 @@ func (w *Watcher) Run() {
 	c := w.c
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
+FOR_LOOP:
 	for {
 		select {
 		case e, ok := <-fsw.Events:
 			if !ok {
-				break
+				break FOR_LOOP
 			}
 			if e.Op != fsnotify.Write {
 				txt, err := ioutil.ReadFile(e.Name)
@@ -115,6 +117,7 @@ func (w *Watcher) Run() {
 		}
 	}
 	close(w.ch)
+	close(w.stopChan)
 }
 
 func (w *Watcher) Events() <-chan *WatcherEvent {

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"strings"
 
@@ -17,7 +20,7 @@ var (
 
 func main() {
 	var consulUrl string
-	flag.StringVar(&consulUrl, "consul", "consul://127.0.0.1:8300", "set consul address")
+	flag.StringVar(&consulUrl, "conf", "consul://127.0.0.1:8300", "set configure path or consul uri")
 	flag.Parse()
 
 	var cfg Config
@@ -51,10 +54,11 @@ func main() {
 		fmt.Println("Init Server ERROR:", err)
 		return
 	}
+	go http.ListenAndServe(cfg.HealthHost, nil)
 	go server.Run()
 
 	app.Wait(func(s os.Signal) {
-		server.Shutdown()
+		server.Shutdown(context.Background())
 		if logfile != nil {
 			logfile.Close()
 		}
