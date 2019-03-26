@@ -11,7 +11,8 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-//update by main.conf
+//update by main.conf, not support update
+//a dns forward or proxy. simpledns will auto try every connection you set
 type UpstreamServer struct {
 	targets     []net.Conn
 	index       int

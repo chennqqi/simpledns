@@ -9,13 +9,14 @@ import (
 )
 
 /*
-
+解析一个zone文件的A记录
 class: IN 只internet, 常用IN和ANY
 TYPE:
 
-
 如果没有设定类，默认值为ANY。如果没有设定类型，默认值为ANY。
 如果没有设定名称，默认值为”*”。
+
+只支持A记录
 */
 type ZoneServer struct {
 	zone   *VZone

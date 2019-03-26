@@ -13,7 +13,7 @@ type Server struct {
 	server  *dns.Server
 	c       *consul.ConsulApp
 	watcher *Watcher
-	upStop chan struct{}
+	upStop  chan struct{}
 }
 
 func (s *Server) Init(cfg *Config) error {
@@ -108,7 +108,7 @@ func (s *Server) update() {
 
 func (s *Server) Shutdown(ctx context.Context) error {
 	defer func() {
-		<- s.upStop
+		<-s.upStop
 	}()
 	s.watcher.Stop()
 	return s.server.ShutdownContext(ctx)

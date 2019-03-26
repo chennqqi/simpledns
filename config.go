@@ -26,12 +26,12 @@ type UpstreamConf struct {
 }
 
 type Config struct {
-	Servers  []ServerConf   `json:"servers" yaml:"servers"`
-	Forwards []UpstreamConf `json:"forwars" yaml:"forwars"`
-	LogFile  string         `json:"log_file" yaml:"log_file"`
-	LogLevel string         `json:"log_level" yaml:"log_level"`
-	Addr     string         `json:"addr" yaml:"addr" default:""`
-	HealthHost   string         `json:"health" yaml:"health"`
+	Servers    []ServerConf   `json:"servers" yaml:"servers"`
+	Forwards   []UpstreamConf `json:"forwars" yaml:"forwars"`
+	LogFile    string         `json:"log_file" yaml:"log_file"`
+	LogLevel   string         `json:"log_level" yaml:"log_level"`
+	Addr       string         `json:"addr" yaml:"addr" default:""`
+	HealthHost string         `json:"health" yaml:"health"`
 }
 
 func ReadTxt(file string) ([]byte, error) {

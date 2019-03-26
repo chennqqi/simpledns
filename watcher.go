@@ -11,17 +11,20 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+//a file to watch, and Arbitrary extra data
 type NameValue struct {
 	Name  string
 	Extra interface{}
 }
 
+//return watcherEvent
 type WatcherEvent struct {
 	Name  string
 	Data  []byte
 	Extra interface{}
 }
 
+//Watcher can watch multiple files or consul-stored files changed event
 type Watcher struct {
 	consulNames  []string
 	consulIndexs []uint64
@@ -33,6 +36,7 @@ type Watcher struct {
 	stopChan chan struct{}
 }
 
+//create a new Watcher, consulOperater is an object to watch consul stored file
 func NewWatcher(names []NameValue, c *consul.ConsulOperator) (*Watcher, error) {
 	var w Watcher
 	fsw, err := fsnotify.NewWatcher()
@@ -68,6 +72,7 @@ func NewWatcher(names []NameValue, c *consul.ConsulOperator) (*Watcher, error) {
 	return &w, nil
 }
 
+//run this watcher
 func (w *Watcher) Run() {
 	fsw := w.w
 	c := w.c
@@ -123,10 +128,12 @@ FOR_LOOP:
 	close(w.stopChan)
 }
 
+//WatcherEvent output chan
 func (w *Watcher) Events() <-chan *WatcherEvent {
 	return w.ch
 }
 
+//stop watcher
 func (w *Watcher) Stop() {
 	w.w.Close()
 	<-w.stopChan

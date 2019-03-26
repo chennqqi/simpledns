@@ -9,12 +9,16 @@ import (
 	"github.com/yl2chen/cidranger"
 )
 
+//zone and nameserver interface
 type DomainNameServer interface {
 	ServeDNS(dns.ResponseWriter, *dns.Msg)
 	Close()
 	Update(txt []byte) error
 }
 
+/* a group of same name zone servers
+   name server will choose the best match of zoneserver
+*/
 type NameServer struct {
 	vzones  []VZone
 	servers []*ZoneServer
@@ -32,7 +36,7 @@ func NewNameServer(vzones []VZone) (*NameServer, error) {
 			return nil, err
 		}
 		err = zs.Update(txt)
-		if err!=nil{
+		if err != nil {
 			logrus.Errorf("[nameserver.go::NewNameServer] Update zone (%v) error: %v", z.File, err)
 			return nil, err
 		}
@@ -86,8 +90,8 @@ func (s *NameServer) Close() {
 }
 
 func (s *NameServer) Update(txt []byte) error {
-	for i := 0; i < len(s.vzones); i++ {
-		//TODO:
-	}
+	//	for i := 0; i < len(s.vzones); i++ {
+	//		//TODO:
+	//	}
 	return nil
 }
