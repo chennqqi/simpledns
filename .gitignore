@@ -3,3 +3,4 @@ dns.log
 simpledns
 console
 dns.log.*
+/*.exe

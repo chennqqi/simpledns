@@ -1,11 +1,17 @@
+[![Build Status](https://travis-ci.org/chennqqi/cas_go_sdk.svg?branch=master)](https://travis-ci.org/chennqqi/cas_go_sdk) [![GoDoc](https://godoc.org/github.com/chennqqi/cas_go_sdk?status.svg)](https://godoc.org/github.com/chennqqi/cas_go_sdk)  [![LICENSE](https://img.shields.io/github/license/chennqqi/cas_go_sdk.svg?style=flat-square)](https://github.com/chennqqi/cas_go_sdk/blob/master/LICENSE) [![Go Report Card](https://goreportcard.com/badge/github.com/chennqqi/simpledns/go)](https://goreportcard.com/report/github.com/chennqqi/simpledns)
+
 # simple dns server
+
+	a simple dns server 
+	
+![](https://raw.githubusercontent.com/chennqqi/simpledns/master/screen.gif)
 
 ## feature
 
 * consul based configure file
 * standard zone file support
 * dynamic load zone files
-* client-ip based zone query
+* client-ip(CIDR) based zone query
 * outter dns server proxy with auto switch
 
 ## build from source
@@ -14,7 +20,7 @@
  
 ## configure example
 
-	see []()
+see [conf dir](https://github.com/chennqqi/simpledns/tree/master/conf)
 	
 # usage
 
@@ -22,6 +28,10 @@
 
 ## docker
 
+build:
+	./builddocker.sh
+	
+or pull:
 	docker pull sort/simpledns
 
 ## known issue
@@ -36,4 +46,5 @@
 
 ## License
 
-Apache 2.0
+Apache 2.0 license. See the [LICENSE](https://github.com/chennqqi/simpledns/blob/master/LICENSE) file for details.
+
