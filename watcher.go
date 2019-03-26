@@ -63,7 +63,7 @@ func NewWatcher(names []NameValue, c *consul.ConsulOperator) (*Watcher, error) {
 			fsw.Add(name)
 			w.extraData[name] = names[i].Extra
 		}
-		logrus.Debugf("add watch:", name, names[i].Extra)
+		logrus.Debugf("add watch: %v %v", name, names[i].Extra)
 	}
 	for i := 0; i < len(w.consulNames); i++ {
 		_, index, _ := c.GetEx(w.consulNames[i])
@@ -113,7 +113,7 @@ FOR_LOOP:
 					logrus.Errorf("[watcher.go::Watcher.Run] consul.GetEx(%v) error: %v", name, err)
 				} else if w.consulIndexs[i] != index { //lastIndex
 					//emit watcherEvent
-					logrus.Debugf("consul event:", name, string(txt), w.extraData[name])
+					logrus.Debugf("consul event: %v %v %v", name, string(txt), w.extraData[name])
 					w.ch <- &WatcherEvent{
 						name,
 						txt,
