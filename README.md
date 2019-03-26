@@ -43,6 +43,7 @@ or pull:
 * tcp dns service
 * multiplex tcp check and tcp dns service
 * add geo based zone query
+* performance test
 
 ## License
 
