@@ -96,7 +96,7 @@ func (s *ZoneServer) Update(txt []byte) error {
 			rrArray = append(rrArray, rr)
 			rrs[rr.Header().Name] = rrArray
 		} else {
-			rrArray := make([]dns.RR, 1)
+			var rrArray []dns.RR
 			rrArray = append(rrArray, rr)
 			rrs[rr.Header().Name] = rrArray
 		}

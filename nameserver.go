@@ -39,7 +39,7 @@ func NewNameServer(vzones []VZone) (*NameServer, error) {
 
 		ranger := cidranger.NewPCTrieRanger()
 		for j := 0; j < len(z.MatchClients); j++ {
-			ip := z.MatchClients[i]
+			ip := z.MatchClients[j]
 			if strings.ToLower(ip) == "any" {
 				ip = "0.0.0.0/0"
 			}
@@ -53,6 +53,7 @@ func NewNameServer(vzones []VZone) (*NameServer, error) {
 		zs.ranger = ranger
 		ns.servers = append(ns.servers, zs)
 	}
+	ns.vzones = vzones
 	return &ns, nil
 }
 
@@ -63,7 +64,8 @@ func (s *NameServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	for i := 0; i < len(servers); i++ {
 		server := servers[i]
 		addr := w.RemoteAddr()
-		ip := addr.(*net.TCPAddr).IP
+		ip := addr.(*net.UDPAddr).IP
+		logrus.Println("remote IP:", ip)
 		contain, _ := server.ranger.Contains(ip)
 		logrus.Println("remoteaddr:", addr, contain)
 		logrus.Println("remoteip:", ip, contain)
@@ -85,7 +87,7 @@ func (s *NameServer) Close() {
 
 func (s *NameServer) Update(txt []byte) error {
 	for i := 0; i < len(s.vzones); i++ {
-
+		//TODO:
 	}
 	return nil
 }

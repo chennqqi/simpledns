@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/chennqqi/goutils/consul"
+	"github.com/chennqqi/goutils/consul.v2"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -33,14 +33,16 @@ type Watcher struct {
 	stopChan chan struct{}
 }
 
-func NewWatcher(names []NameValue) (*Watcher, error) {
+func NewWatcher(names []NameValue, c *consul.ConsulOperator) (*Watcher, error) {
 	var w Watcher
 	fsw, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
+	w.c = c
 	w.ch = make(chan *WatcherEvent)
 	w.extraData = make(map[string]interface{})
+	w.stopChan = make(chan struct{})
 	w.w = fsw
 
 	for i := 0; i < len(names); i++ {
@@ -57,6 +59,10 @@ func NewWatcher(names []NameValue) (*Watcher, error) {
 		}
 		w.extraData[name] = names[i].Extra
 	}
+	for i := 0; i < len(w.consulNames); i++ {
+		_, index, _ := c.GetEx(w.consulNames[i])
+		w.consulIndexs = append(w.consulIndexs, index)
+	}
 	return &w, nil
 }
 
@@ -65,11 +71,12 @@ func (w *Watcher) Run() {
 	c := w.c
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
+FOR_LOOP:
 	for {
 		select {
 		case e, ok := <-fsw.Events:
 			if !ok {
-				break
+				break FOR_LOOP
 			}
 			if e.Op != fsnotify.Write {
 				txt, err := ioutil.ReadFile(e.Name)
@@ -110,6 +117,7 @@ func (w *Watcher) Run() {
 		}
 	}
 	close(w.ch)
+	close(w.stopChan)
 }
 
 func (w *Watcher) Events() <-chan *WatcherEvent {

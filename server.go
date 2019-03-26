@@ -1,19 +1,18 @@
 package main
 
 import (
+	"context"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-
 	"github.com/chennqqi/goutils/consul"
 	"github.com/miekg/dns"
 )
 
 type Server struct {
-	serverMap map[string]DomainNameServer
-	server    *dns.Server
-	c         *consul.ConsulApp
-	watcher   *Watcher
+	server  *dns.Server
+	c       *consul.ConsulApp
+	watcher *Watcher
 }
 
 func (s *Server) Init(cfg *Config) error {
@@ -72,7 +71,7 @@ func (s *Server) Init(cfg *Config) error {
 			}
 		}
 	}
-	watcher, err := NewWatcher(watchValues)
+	watcher, err := NewWatcher(watchValues, gconsul.ConsulOperator)
 	if err != nil {
 		return err
 	}
@@ -92,7 +91,6 @@ func (s *Server) update() {
 			break
 		}
 		logrus.Infof("[server.go::Server.update] ProcessUpdate %v", e)
-
 		v := e.Extra
 		if v == nil {
 			continue
@@ -103,17 +101,12 @@ func (s *Server) update() {
 	}
 }
 
-func (s *Server) Shutdown() error {
-	//TODO: context
+func (s *Server) Shutdown(ctx context.Context) error {
 	s.watcher.Stop()
-	s.server.Shutdown()
-	return nil
+	return s.server.ShutdownContext(ctx)
 }
 
 func (s *Server) Run() error {
-	for name, s := range s.serverMap {
-		dns.Handle(name, s)
-	}
 	go s.watcher.Run()
 
 	server := s.server
