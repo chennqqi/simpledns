@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/chennqqi/goutils/consul"
+	"github.com/chennqqi/goutils/consul.v2"
 	"github.com/fsnotify/fsnotify"
 )
 
