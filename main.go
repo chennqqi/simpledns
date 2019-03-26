@@ -34,7 +34,7 @@ func main() {
 			return
 		}
 	} else {
-		err := yamlconfig.Load(&cfg, "")
+		err := yamlconfig.Load(&cfg, conf)
 		if err != nil {
 			logrus.Errorf("[main.go::main] yamlconfig.Load error: %v", err)
 			return
