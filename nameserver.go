@@ -70,7 +70,7 @@ func (s *NameServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		//logrus.Println("remoteaddr:", addr, contain)
 		//logrus.Println("remoteip:", ip, contain)
 		if contain {
-			server.handleRequest(w, r)
+			server.ServeDNS(w, r)
 			return
 		}
 	}
