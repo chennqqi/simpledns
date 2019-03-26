@@ -13,6 +13,7 @@ type Server struct {
 	server  *dns.Server
 	c       *consul.ConsulApp
 	watcher *Watcher
+	upStop chan struct{}
 }
 
 func (s *Server) Init(cfg *Config) error {
@@ -36,7 +37,6 @@ func (s *Server) Init(cfg *Config) error {
 	for i := 0; i < len(cfg.Servers); i++ {
 		sv := &cfg.Servers[i]
 		ns, err := NewNameServer(sv.VZones)
-		logrus.Println("server:", ns, err)
 		if err != nil {
 			return err
 		}
@@ -47,7 +47,7 @@ func (s *Server) Init(cfg *Config) error {
 			ms[sv.Name] = ns
 			dns.Handle(sv.Name, ns)
 			logrus.Println("Add handle", sv.Name, ns)
-			for j := 0; j < len(ns.servers); j++ {
+			for j := 0; j < len(sv.VZones); j++ {
 				watchValues = append(watchValues, NameValue{
 					sv.VZones[j].File,
 					ns.servers[j],
@@ -78,6 +78,7 @@ func (s *Server) Init(cfg *Config) error {
 
 	s.watcher = watcher
 	s.server = server
+	s.upStop = make(chan struct{})
 	//new watcher
 	return nil
 }
@@ -87,25 +88,34 @@ func (s *Server) update() {
 	for {
 		e, ok := <-watcher.Events()
 		if !ok {
+			logrus.Println("update stop")
 			break
 		}
-		logrus.Infof("[server.go::Server.update] ProcessUpdate %v", e)
+		logrus.Infof("[server.go::Server.update] ProcessUpdate %v", e.Name)
 		v := e.Extra
+		logrus.Println("extra:", v)
 		if v == nil {
 			continue
 		}
 		if ds, ok := v.(DomainNameServer); ok {
 			ds.Update(e.Data)
+		} else {
+			logrus.Panic("[server.go::update] assert type DomainNameServer error")
 		}
 	}
+	close(s.upStop)
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
+	defer func() {
+		<- s.upStop
+	}()
 	s.watcher.Stop()
 	return s.server.ShutdownContext(ctx)
 }
 
 func (s *Server) Run() error {
+	go s.update()
 	go s.watcher.Run()
 
 	server := s.server

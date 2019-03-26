@@ -19,8 +19,6 @@ TYPE:
 */
 type ZoneServer struct {
 	zone   *VZone
-	file   string
-	name   string
 	ranger cidranger.Ranger
 	rrs    map[string][]dns.RR
 }
@@ -38,7 +36,7 @@ type ZoneServer struct {
 The prerequisite section can also be left empty. If you have decided on the prerequisites you can tell what RRs should be added or deleted. The next table shows the options you have and what functions to call.
 */
 
-func (s *ZoneServer) handleRequest(w dns.ResponseWriter, r *dns.Msg) {
+func (s *ZoneServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	rrs := s.rrs
 	m := new(dns.Msg)
 	m.SetReply(r)
@@ -74,6 +72,9 @@ func (s *ZoneServer) handleRequest(w dns.ResponseWriter, r *dns.Msg) {
 		}
 	}
 	w.WriteMsg(m)
+}
+
+func (s *ZoneServer) Close() {
 }
 
 func (s *ZoneServer) Update(txt []byte) error {
