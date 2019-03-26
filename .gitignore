@@ -1,3 +1,5 @@
 config/
 dns.log
 simpledns
+console
+dns.log.*
