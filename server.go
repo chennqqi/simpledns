@@ -78,7 +78,6 @@ func (s *Server) Init(cfg *Config) error {
 
 	s.watcher = watcher
 	s.server = server
-    s.serverMap  = ms
 	//new watcher
 	return nil
 }

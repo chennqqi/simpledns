@@ -60,22 +60,22 @@ func NewNameServer(vzones []VZone) (*NameServer, error) {
 func (s *NameServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	//no locking code
 	servers := s.servers
-	logrus.Println("servers count:", len(servers))
+	//logrus.Println("servers count:", len(servers))
 	for i := 0; i < len(servers); i++ {
 		server := servers[i]
 		addr := w.RemoteAddr()
 		ip := addr.(*net.UDPAddr).IP
-		logrus.Println("remote IP:", ip)
+		//logrus.Println("remote IP:", ip)
 		contain, _ := server.ranger.Contains(ip)
-		logrus.Println("remoteaddr:", addr, contain)
-		logrus.Println("remoteip:", ip, contain)
+		//logrus.Println("remoteaddr:", addr, contain)
+		//logrus.Println("remoteip:", ip, contain)
 		if contain {
 			server.handleRequest(w, r)
 			return
 		}
 	}
 	//return empty
-	logrus.Infof("[nameserver.go::NameServer.ServeDNS] mis match ip")
+	//logrus.Infof("[nameserver.go::NameServer.ServeDNS] mis match ip")
 	m := new(dns.Msg)
 	m.SetReply(r)
 	w.WriteMsg(m)

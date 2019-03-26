@@ -21,7 +21,7 @@ var (
 
 func main() {
 	var conf string
-	flag.StringVar(&conf, "conf", "consul://127.0.0.1:8300", "set configure path or consul uri")
+	flag.StringVar(&conf, "conf", "consul://127.0.0.1:8500", "set configure path or consul uri")
 	flag.Parse()
 
 	var cfg Config
@@ -45,6 +45,7 @@ func main() {
 		app.Fix()
 		app.Ping()
 	}
+	gconsul = app
 
 	switch strings.ToUpper(cfg.LogLevel) {
 	case "ERROR":

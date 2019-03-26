@@ -52,7 +52,7 @@ func NewWatcher(names []NameValue, c *consul.ConsulOperator) (*Watcher, error) {
 			if err != nil {
 				logrus.Errorf("[watcher.go::Watcher.NewWatcher] parse consul %v error: %v", name, err)
 			} else {
-				w.consulNames = append(w.consulNames[1:], u.Path)
+				w.consulNames = append(w.consulNames, u.Path)
 			}
 		} else {
 			fsw.Add(name)
