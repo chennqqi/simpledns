@@ -1,0 +1,22 @@
+servers: 
+- name: yxt.nslookup.site.
+  v_zones:
+  - match_clients: [ "127.0.0.1/24" ]
+    file: 'conf/zones/t.yxt.nslookup.site'
+  - match_clients: [ "192.168.56.1/24" ]
+    file: 'conf/zones/p.yxt.nslookup.site'  
+forwars: 
+  - name: shellpub.com.
+    cache_expire: 10m
+    upstreams:
+    - 'udp://8.8.8.8:53'
+    - 'udp://114.114.114.114:53'
+#  - name: '.'
+#    cache_expire: 5m
+#    upstreams:
+#    - 'udp://8.8.8.8:53'
+#    - 'udp://114.114.114.114:53'
+log_file: "console"
+log_level: "INFO"
+addr: ":10054"
+health: ":10055"

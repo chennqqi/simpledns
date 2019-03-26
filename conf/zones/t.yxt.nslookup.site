@@ -1,0 +1,6 @@
+$TTL 600; 10 minites
+$ORIGIN yxt.nslookup.site.
+api                  A       192.168.3.104
+api                  A       192.168.3.105
+api                  A       192.168.3.106
+www                  A       192.168.3.104
