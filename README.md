@@ -15,6 +15,8 @@
 * outter dns server proxy with auto switch
 
 ## build from source
+	
+required go version >= 1.10
 
 	go get -u -v github.com/chennqqi/simpledns
  
