@@ -5,8 +5,6 @@ ARG app_name=simpledns
 
 RUN set -x \
   && echo "===> Add malice user and malware folder..." \
-  && addgroup ${app_name} \
-  && adduser -S -G ${app_name} ${app_name} \
   && mkdir /${app_name} \
   && apk --update add ca-certificates
 
@@ -20,10 +18,8 @@ RUN apk --update add --no-cache -t .build-deps \
 RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 
 ## custom by app 
-RUN mkdir /${app_name}/etc && chown -R $app_name:$app_name /${app_name}
 COPY ${app_name} /${app_name}/
 RUN chmod +x /${app_name}/${app_name} 
 WORKDIR /${app_name}
-USER ${app_name}
 
 ENTRYPOINT ["./simpledns"]
