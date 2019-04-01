@@ -24,12 +24,14 @@ type NameServer struct {
 	servers []*ZoneServer
 }
 
-func NewNameServer(vzones []VZone) (*NameServer, error) {
+func NewNameServer(conf *ServerConf) (*NameServer, error) {
 	var ns NameServer
-	for i := 0; i < len(vzones); i++ {
-		z := &vzones[i]
+
+	for i := 0; i < len(conf.VZones); i++ {
+		z := &conf.VZones[i]
 		zs := &ZoneServer{}
 		zs.zone = z
+		zs.roundRobin = conf.RoundRobin
 		txt, err := ReadTxt(z.File)
 		if err != nil {
 			logrus.Errorf("[nameserver.go::NewNameServer] ReadTxt (%v) error: %v", z.File, err)
@@ -57,7 +59,7 @@ func NewNameServer(vzones []VZone) (*NameServer, error) {
 		zs.ranger = ranger
 		ns.servers = append(ns.servers, zs)
 	}
-	ns.vzones = vzones
+	ns.vzones = conf.VZones
 	return &ns, nil
 }
 

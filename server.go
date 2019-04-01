@@ -36,7 +36,7 @@ func (s *Server) Init(cfg *Config) error {
 	logrus.Println("servers:", cfg.Servers, len(cfg.Servers))
 	for i := 0; i < len(cfg.Servers); i++ {
 		sv := &cfg.Servers[i]
-		ns, err := NewNameServer(sv.VZones)
+		ns, err := NewNameServer(sv)
 		if err != nil {
 			return err
 		}

@@ -19,9 +19,22 @@ TYPE:
 只支持A记录
 */
 type ZoneServer struct {
-	zone   *VZone
-	ranger cidranger.Ranger
-	rrs    map[string][]dns.RR
+	roundRobin bool
+	zone       *VZone
+	ranger     cidranger.Ranger
+	rrs        map[string][]dns.RR
+}
+
+func (s *ZoneServer) rrPolicy(rr []dns.RR, r *dns.Msg) []dns.RR {
+	if s.roundRobin {
+		shift := int(r.MsgHdr.Id) % len(rr)
+		var nrr []dns.RR
+		nrr = append(nrr, rr[shift:]...)
+		nrr = append(nrr, rr[:shift]...)
+		return nrr
+	} else {
+		return rr
+	}
 }
 
 /*
@@ -67,7 +80,7 @@ func (s *ZoneServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 				switch t {
 				case dns.TypeANY:
 				default:
-					m.Used(rrArray)
+					m.Used(s.rrPolicy(rrArray, r))
 				}
 			}
 		}

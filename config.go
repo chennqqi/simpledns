@@ -15,8 +15,9 @@ type VZone struct {
 }
 
 type ServerConf struct {
-	Name   string  `json:"name" yaml:"name"`
-	VZones []VZone `json:"v_zones" yaml:"v_zones"`
+	Name       string  `json:"name" yaml:"name"`
+	RoundRobin bool    `json:"round_robin" yaml:"round_robin"`
+	VZones     []VZone `json:"v_zones" yaml:"v_zones"`
 }
 
 type UpstreamConf struct {
