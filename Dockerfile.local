@@ -4,7 +4,6 @@ LABEL maintainer "q@shellpub.com"
 ARG app_name=simpledns
 
 RUN set -x \
-  && echo "===> Add malice user and malware folder..." \
   && mkdir /${app_name} \
   && apk --update add ca-certificates
 
