@@ -6,7 +6,7 @@ servers:
   - match_clients: [ "192.168.56.1/24" ]
     file: 'conf/zones/p.yxt.nslookup.site'  
 forwards: 
-  - name: shellpub.com.
+  - name: .
     cache_expire: 10m
     upstreams:
     - 'udp://8.8.8.8:53'

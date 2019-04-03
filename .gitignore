@@ -1,6 +1,6 @@
 config/
 dns.log
 simpledns
-console
+console.*
 dns.log.*
 /*.exe
