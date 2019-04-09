@@ -4,3 +4,4 @@ simpledns
 console.*
 dns.log.*
 /*.exe
+/console
