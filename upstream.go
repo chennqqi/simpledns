@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"net"
 	"net/url"
 	"time"
 
@@ -14,7 +13,7 @@ import (
 //update by main.conf, not support update
 //a dns forward or proxy. simpledns will auto try every connection you set
 type UpstreamServer struct {
-	targets     []net.Conn
+	targets     []string
 	index       int
 	cached      bool
 	cacheExpire time.Duration
@@ -32,14 +31,7 @@ func NewUpstream(targets []string, cachedExpire time.Duration) (*UpstreamServer,
 		}
 		switch u.Scheme {
 		case "udp":
-			if u.Port() != "" {
-				conn, err := net.Dial("udp", u.Host)
-				if err == nil {
-					up.targets = append(up.targets, conn)
-				} else {
-					logrus.Errorf("[server.go::UpstreamServer.NewUpstreamServer] parse udp upstream(%v), error: %v", targets[i], err)
-				}
-			}
+			up.targets = append(up.targets, u.Host)
 		default:
 			logrus.Warnf("[server.go::UpstreamServer.NewUpstreamServer] parse upstream(%v), not support ignore", targets[i])
 		}
@@ -61,10 +53,7 @@ func (s *UpstreamServer) Update([]byte) error {
 }
 
 func (s *UpstreamServer) Close() {
-	for i := 0; i < len(s.targets); i++ {
-		s.targets[i].Close()
-	}
-	s.targets = make([]net.Conn, 0)
+	s.targets = make([]string, 0)
 }
 
 func (s *UpstreamServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
@@ -96,8 +85,8 @@ func (s *UpstreamServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	//retry max
 	index := s.index
 	for retry := 0; retry < len(s.targets); retry++ {
-		conn := s.targets[index]
-		resp, err := dns.ExchangeConn(conn, r)
+		addr := s.targets[index]
+		resp, err := dns.Exchange(r, addr)
 		if err != nil {
 			logrus.Errorf("[server.go:ForwardServer.handleRequest] ExchangeConn error: %v", err)
 			s.index = (index + 1) % len(s.targets)
