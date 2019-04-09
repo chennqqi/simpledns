@@ -59,6 +59,7 @@ func main() {
 	case "INFO":
 		logrus.SetLevel(logrus.InfoLevel)
 	}
+	logrus.Println("CFG:", cfg)
 
 	logfile, err := logrotate.New(cfg.LogFile, 86400, 7, 0, false)
 	if cfg.LogFile != strings.ToLower("console") && err == nil {

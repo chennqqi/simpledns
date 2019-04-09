@@ -1,22 +1,11 @@
-FROM alpine
+FROM sort/alpinego
 LABEL maintainer "q@shellpub.com"
 
 ARG app_name=simpledns
 
 RUN set -x \
-  && mkdir /${app_name} \
-  && apk --update add ca-certificates
+  && mkdir /${app_name} 
 
-RUN apk --update add --no-cache -t .build-deps \
-	tini \
-	su-exec \
-  && echo "===> Building ${app_name} daemon..." \
-  && apk del --purge .build-deps 
-
-## fix golang link
-RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
-
-## custom by app 
 COPY ${app_name} /${app_name}/
 RUN chmod +x /${app_name}/${app_name} 
 WORKDIR /${app_name}
