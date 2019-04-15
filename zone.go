@@ -26,7 +26,7 @@ type ZoneServer struct {
 }
 
 func (s *ZoneServer) rrPolicy(rr []dns.RR, r *dns.Msg) []dns.RR {
-	if s.roundRobin {
+	if s.roundRobin && len(rr) > 0 {
 		shift := int(r.MsgHdr.Id) % len(rr)
 		var nrr []dns.RR
 		nrr = append(nrr, rr[shift:]...)
