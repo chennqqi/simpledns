@@ -19,7 +19,7 @@ forwards:
   - name: consul.
     cache_expire: 5m
     upstreams:
-    - 'udp://127.0.0.1:8300'
+    - 'udp://127.0.0.1:8600'
 log_file: "console"
 log_level: "INFO"
 addr: ":10054"

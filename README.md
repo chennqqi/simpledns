@@ -47,7 +47,7 @@ add a forward upstream in forwards section, see [example](https://github.com/che
           - name: consul.
 	        cache_expire: 5m
 	        upstreams:
-	        - 'udp://127.0.0.1:8300'
+	        - 'udp://127.0.0.1:8600'
 
 
 ## TODO:
