@@ -13,6 +13,7 @@
 * dynamic load zone files
 * client-ip(CIDR) based zone query
 * outter dns server proxy with auto switch
+* dns proxy with localcache, with this feature will enable proxy consul dns service to public
 
 ## build from source
 	
