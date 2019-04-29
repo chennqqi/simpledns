@@ -44,11 +44,10 @@ or pull:
 
 add a forward upstream in forwards section, see [example](https://github.com/chennqqi/simpledns/tree/master/conf/simpledns.yml)
 
-	forwards: 
-	  - name: consul.
-		cache_expire: 5m
-        upstreams:
-        - 'udp://127.0.0.1:8300'
+  - name: consul.
+	cache_expire: 5m
+	upstreams:
+	- 'udp://127.0.0.1:8300'
 
 
 ## TODO:
