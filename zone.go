@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"time"
+	//"reflect"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
@@ -22,7 +22,6 @@ TYPE:
 type ZoneServer struct {
 	roundRobin    bool
 	checker       string
-	pingCheck     time.Duration
 	zone          *VZone
 	ranger        cidranger.Ranger
 	rrs           map[string][]dns.RR
@@ -32,8 +31,9 @@ type ZoneServer struct {
 func (s *ZoneServer) rrPolicy(rr []dns.RR, r *dns.Msg) []dns.RR {
 	//filter by ping checker
 	//at least return one result, even if it wasn't check passed
-	if s.pingCheck != 0 && len(rr) > 1 {
+	if s.healthChecker != nil && len(rr) > 1 {
 		rre := s.healthChecker.Filter(rr)
+		logrus.Println("after filter:", rre)
 		if len(rre) > 0 {
 			rr = rre
 		}
@@ -144,21 +144,22 @@ func (s *ZoneServer) Update(txt []byte) error {
 	if s.checker != "" {
 		var iplist []string
 		for _, rr := range rrs {
-			if rr[0].Header().Rrtype == dns.TypeA || rr[0].Header().Rrtype != dns.TypeAAAA {
+			if rr[0].Header().Rrtype != dns.TypeA && rr[0].Header().Rrtype != dns.TypeAAAA {
 				continue
 			}
-			if len(rr) > 1 {
+			if len(rr) == 1 {
 				continue
 			}
-
 			switch rr[0].Header().Rrtype {
-			//currently only ipv4, we don't certainly sure whether ping ipv6 is ok
 			case dns.TypeA:
 				for i := 0; i < len(rr); i++ {
+					//typeOfA := reflect.TypeOf(rr[0])
+		    			//logrus.Println("RRTYPE:", typeOfA.Name(), typeOfA.Kind())
 					if a, ok := rr[i].(*dns.A); ok {
 						iplist = append(iplist, a.A.String())
 					}
 				}
+				//currently only ipv4, we don't certainly sure whether ping ipv6 is ok
 				//			case dns.TypeAAAA:
 				//				if a, ok := rr.(*dns.AAAA); ok {
 				//					iplist = append(a.A.String(), iplist)

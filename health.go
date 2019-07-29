@@ -46,12 +46,13 @@ func (this *HealthChecker) start(ctx context.Context) {
 
 func (this *HealthChecker) stop() {
 	list := this.iplist
-	this.cancel()
-	oldlist := this.iplist
-	for i := 0; i < len(list); i++ {
-		this.healthMap.Delete(oldlist[i])
+	if len(list) > 0 {
+		this.cancel()
+		for i := 0; i < len(list); i++ {
+			this.healthMap.Delete(list[i])
+		}
+		this.wg.Wait()
 	}
-	this.wg.Wait()
 }
 
 func (this *HealthChecker) check(ctx context.Context, ip string) {
@@ -71,12 +72,18 @@ func (this *HealthChecker) check(ctx context.Context, ip string) {
 
 			p.Count = 1
 			p.Timeout = 3 * time.Second
-			p.Run(ctx)
+			err = p.Run(ctx)
+			if err == ping.ErrCanceled {
+				return
+			}
 			statistics := p.Statistics()
 			if statistics.PacketsSent == statistics.PacketsRecv {
+				logrus.Printf("PING CHECK %v OK", ip)
 				this.healthMap.Delete(ip)
 			} else {
 				this.healthMap.Store(ip, true)
+				k, v := this.healthMap.Load(ip)
+				logrus.Printf("PING CHECK %v FAILED: %v, %v", ip, k, v)
 			}
 		}
 	}
@@ -106,14 +113,14 @@ func (this *HealthChecker) Filter(rrs []dns.RR) []dns.RR {
 		//currently only ipv4, we don't certainly sure whether ping ipv6 is ok
 		case dns.TypeA:
 			if a, ok := rr.(*dns.A); ok {
-				if _, exist := this.healthMap.Load(a.String()); !exist {
+				if _, exist := this.healthMap.Load(a.A.String()); !exist {
 					returnRrs = append(returnRrs, rr)
 				}
 			}
 
 		case dns.TypeAAAA:
 			if a, ok := rr.(*dns.AAAA); ok {
-				if _, exist := this.healthMap.Load(a.String()); !exist {
+				if _, exist := this.healthMap.Load(a.AAAA.String()); !exist {
 					returnRrs = append(returnRrs, rr)
 				}
 			}
