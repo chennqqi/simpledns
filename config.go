@@ -12,12 +12,14 @@ import (
 type VZone struct {
 	MatchClients []string `json:"match_clients" yaml:"match_clients"`
 	File         string   `json:"file" yaml:"file"`
+	Checker      string   `json:"checker" yaml:"checker"`
 }
 
 type ServerConf struct {
 	Name       string  `json:"name" yaml:"name"`
-	RoundRobin bool    `json:"round_robin" yaml:"round_robin"`
+	Checker    string  `json:"checker" yaml:"checker"`
 	VZones     []VZone `json:"v_zones" yaml:"v_zones"`
+	RoundRobin bool    `json:"round_robin" yaml:"round_robin"`
 }
 
 type UpstreamConf struct {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
@@ -19,13 +20,25 @@ TYPE:
 只支持A记录
 */
 type ZoneServer struct {
-	roundRobin bool
-	zone       *VZone
-	ranger     cidranger.Ranger
-	rrs        map[string][]dns.RR
+	roundRobin    bool
+	checker       string
+	pingCheck     time.Duration
+	zone          *VZone
+	ranger        cidranger.Ranger
+	rrs           map[string][]dns.RR
+	healthChecker *HealthChecker
 }
 
 func (s *ZoneServer) rrPolicy(rr []dns.RR, r *dns.Msg) []dns.RR {
+	//filter by ping checker
+	//at least return one result, even if it wasn't check passed
+	if s.pingCheck != 0 && len(rr) > 1 {
+		rre := s.healthChecker.Filter(rr)
+		if len(rre) > 0 {
+			rr = rre
+		}
+	}
+
 	if s.roundRobin && len(rr) > 0 {
 		shift := int(r.MsgHdr.Id) % len(rr)
 		var nrr []dns.RR
@@ -89,6 +102,9 @@ func (s *ZoneServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 }
 
 func (s *ZoneServer) Close() {
+	if s.healthChecker != nil {
+		s.healthChecker.Stop()
+	}
 }
 
 func (s *ZoneServer) Update(txt []byte) error {
@@ -121,8 +137,44 @@ func (s *ZoneServer) Update(txt []byte) error {
 		logrus.Warnf("[server.go::Zonserver.Update] zp.Err: %v", err)
 		return err
 	}
-
 	//fix
 	s.rrs = rrs
+
+	//update checker
+	if s.checker != "" {
+		var iplist []string
+		for _, rr := range rrs {
+			if rr[0].Header().Rrtype == dns.TypeA || rr[0].Header().Rrtype != dns.TypeAAAA {
+				continue
+			}
+			if len(rr) > 1 {
+				continue
+			}
+
+			switch rr[0].Header().Rrtype {
+			//currently only ipv4, we don't certainly sure whether ping ipv6 is ok
+			case dns.TypeA:
+				for i := 0; i < len(rr); i++ {
+					if a, ok := rr[i].(*dns.A); ok {
+						iplist = append(iplist, a.A.String())
+					}
+				}
+				//			case dns.TypeAAAA:
+				//				if a, ok := rr.(*dns.AAAA); ok {
+				//					iplist = append(a.A.String(), iplist)
+				//				}
+			}
+		}
+
+		if s.healthChecker == nil {
+			checkMode, checkTo := ParseCheck(s.checker)
+			if checkMode == "ping" {
+				s.healthChecker = NewHealthChecker(checkTo)
+			} else {
+				logrus.Warnf("[zone.go] simpledns only support ping check now, not support %v", checkMode)
+			}
+		}
+		s.healthChecker.Update(iplist)
+	}
 	return nil
 }

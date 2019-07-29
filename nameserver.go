@@ -32,6 +32,11 @@ func NewNameServer(conf *ServerConf) (*NameServer, error) {
 		zs := &ZoneServer{}
 		zs.zone = z
 		zs.roundRobin = conf.RoundRobin
+
+		if zs.checker == "" {
+			zs.checker = conf.Checker
+		}
+
 		txt, err := ReadTxt(z.File)
 		if err != nil {
 			logrus.Errorf("[nameserver.go::NewNameServer] ReadTxt (%v) error: %v", z.File, err)
