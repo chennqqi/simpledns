@@ -14,6 +14,7 @@
 * client-ip(CIDR) based zone query
 * outter dns server proxy with auto switch
 * dns proxy with localcache, with this feature will enable proxy consul dns service to public
+* multiple resolve with ping check
 
 ## build from source
 	
@@ -50,9 +51,28 @@ add a forward upstream in forwards section, see [example](https://github.com/che
 	        upstreams:
 	        - 'udp://127.0.0.1:8600'
 
+## with k8s/coredns as backend
+
+         - name: cluster.local.
+	        cache_expire: 5m
+	        upstreams:
+	        - 'udp://xx.xx.xx.xx:53'
+
+## ping check
+
+		servers: 
+		- name: example.com.
+		  v_zones:
+		  - match_clients: [ "127.0.0.1/24" ]
+		    file: 'conf/zones/t.example.com'
+            checker: 'ping 10s' # every 10s check once
+
+	note: if after ping check, this was no one valid ipaddr. it will ignore check result, return all result.
+	
 
 ## TODO:
 
+* control api, support ddns
 * tcp dns service
 * multiplex tcp check and tcp dns service
 * add geo based zone query
