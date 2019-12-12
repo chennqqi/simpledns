@@ -4,8 +4,8 @@ import (
 	"net"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
+	"github.com/sirupsen/logrus"
 	"github.com/yl2chen/cidranger"
 )
 

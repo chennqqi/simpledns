@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/chennqqi/go-ping"
 	"github.com/miekg/dns"
+	"github.com/sirupsen/logrus"
 )
 
 type HealthChecker struct {

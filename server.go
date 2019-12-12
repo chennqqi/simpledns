@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/chennqqi/goutils/consul"
 	"github.com/miekg/dns"
+	"github.com/sirupsen/logrus"
 )
 
 type Server struct {

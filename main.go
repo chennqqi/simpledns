@@ -9,10 +9,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/chennqqi/goutils/consul.v2"
 	"github.com/chennqqi/goutils/yamlconfig"
 	"github.com/immortal/logrotate"
+	"github.com/sirupsen/logrus"
 )
 
 var (

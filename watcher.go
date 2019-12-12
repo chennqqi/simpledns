@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/chennqqi/goutils/consul.v2"
 	"github.com/fsnotify/fsnotify"
+	"github.com/sirupsen/logrus"
 )
 
 //a file to watch, and Arbitrary extra data

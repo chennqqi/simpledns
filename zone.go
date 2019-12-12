@@ -4,8 +4,8 @@ import (
 	"bytes"
 	//"reflect"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
+	"github.com/sirupsen/logrus"
 	"github.com/yl2chen/cidranger"
 )
 
@@ -154,7 +154,7 @@ func (s *ZoneServer) Update(txt []byte) error {
 			case dns.TypeA:
 				for i := 0; i < len(rr); i++ {
 					//typeOfA := reflect.TypeOf(rr[0])
-		    			//logrus.Println("RRTYPE:", typeOfA.Name(), typeOfA.Kind())
+					//logrus.Println("RRTYPE:", typeOfA.Name(), typeOfA.Kind())
 					if a, ok := rr[i].(*dns.A); ok {
 						iplist = append(iplist, a.A.String())
 					}
