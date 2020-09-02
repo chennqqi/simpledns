@@ -4,6 +4,7 @@ FROM golang:1.14.7-alpine3.12 as builder
 WORKDIR /src/simpledns
 COPY .  .
 
+RUN go env -w GOPROXY=https://goproxy.cn
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/simpledns
 
 # build runtime
@@ -11,6 +12,7 @@ FROM alpine:3.12
 
 LABEL maintainer "https://github.com/chennqqi"
 
+RUN echo "https://mirror.tuna.tsinghua.edu.cn/alpine/v3.12/main" > /etc/apk/repositories
 RUN mkdir -p /app && \
 	apk --update add --no-cache tzdata ca-certificates libcap && \
 	update-ca-certificates
