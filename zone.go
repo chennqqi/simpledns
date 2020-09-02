@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	//"reflect"
 
 	"github.com/miekg/dns"
 	"github.com/sirupsen/logrus"
@@ -20,24 +19,16 @@ TYPE:
 只支持A记录
 */
 type ZoneServer struct {
-	roundRobin    bool
-	checker       string
-	zone          *VZone
-	ranger        cidranger.Ranger
-	rrs           map[string][]dns.RR
-	healthChecker *HealthChecker
+	roundRobin bool
+	checker    string
+	zone       *VZone
+	ranger     cidranger.Ranger
+	rrs        map[string][]dns.RR
 }
 
 func (s *ZoneServer) rrPolicy(rr []dns.RR, r *dns.Msg) []dns.RR {
 	//filter by ping checker
 	//at least return one result, even if it wasn't check passed
-	if s.healthChecker != nil && len(rr) > 1 {
-		rre := s.healthChecker.Filter(rr)
-		logrus.Println("after filter:", rre)
-		if len(rre) > 0 {
-			rr = rre
-		}
-	}
 
 	if s.roundRobin && len(rr) > 0 {
 		shift := int(r.MsgHdr.Id) % len(rr)
@@ -102,9 +93,6 @@ func (s *ZoneServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 }
 
 func (s *ZoneServer) Close() {
-	if s.healthChecker != nil {
-		s.healthChecker.Stop()
-	}
 }
 
 func (s *ZoneServer) Update(txt []byte) error {
@@ -166,16 +154,6 @@ func (s *ZoneServer) Update(txt []byte) error {
 				//				}
 			}
 		}
-
-		if s.healthChecker == nil {
-			checkMode, checkTo := ParseCheck(s.checker)
-			if checkMode == "ping" {
-				s.healthChecker = NewHealthChecker(checkTo)
-			} else {
-				logrus.Warnf("[zone.go] simpledns only support ping check now, not support %v", checkMode)
-			}
-		}
-		s.healthChecker.Update(iplist)
 	}
 	return nil
 }

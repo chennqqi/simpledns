@@ -11,8 +11,8 @@ import (
 
 type VZone struct {
 	MatchClients []string `json:"match_clients" yaml:"match_clients"`
+	Zone         string   `json:"zone" yaml:"zone"`
 	File         string   `json:"file" yaml:"file"`
-	Checker      string   `json:"checker" yaml:"checker"`
 }
 
 type ServerConf struct {
@@ -27,13 +27,19 @@ type UpstreamConf struct {
 	Upstreams   []string       `json:"upstreams" yaml:"upstreams"`
 }
 
+type WebConf struct {
+	Addr     string `json:"addr" yaml:"addr"`
+	Token    string `json:"token" yaml:"token"`
+	Readonly bool   `json:"readonly" yaml:"readonly"`
+}
+
 type Config struct {
-	Servers    []ServerConf   `json:"servers" yaml:"servers"`
-	Forwards   []UpstreamConf `json:"forwards" yaml:"forwards"`
-	LogFile    string         `json:"log_file" yaml:"log_file"`
-	LogLevel   string         `json:"log_level" yaml:"log_level"`
-	Addr       string         `json:"addr" yaml:"addr" default:""`
-	HealthHost string         `json:"health" yaml:"health"`
+	Servers  []ServerConf   `json:"servers" yaml:"servers"`
+	Forwards []UpstreamConf `json:"forwards" yaml:"forwards"`
+	LogFile  string         `json:"log_file" yaml:"log_file"`
+	LogLevel string         `json:"log_level" yaml:"log_level"`
+	Addr     string         `json:"addr" yaml:"addr" default:""`
+	Web      WebConf        `json:"web" yaml:"web"`
 }
 
 func ReadTxt(file string) ([]byte, error) {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"strings"
@@ -27,6 +26,7 @@ func main() {
 	var cfg Config
 	var app *consul.ConsulApp
 	var err error
+
 	if strings.HasPrefix(conf, "consul://") {
 		app, err = consul.NewConsulAppWithCfg(&cfg, conf)
 		if err != nil {
@@ -66,13 +66,12 @@ func main() {
 		logrus.SetOutput(logfile)
 	}
 
-	var server Server
+	var server App
 	err = server.Init(&cfg)
 	if err != nil {
 		fmt.Println("Init Server ERROR:", err)
 		return
 	}
-	go http.ListenAndServe(cfg.HealthHost, nil)
 	go server.Run()
 
 	app.Wait(func(s os.Signal) {

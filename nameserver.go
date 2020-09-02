@@ -20,6 +20,8 @@ type DomainNameServer interface {
    name server will choose the best match of zoneserver
 */
 type NameServer struct {
+	ServerConf
+
 	vzones  []VZone
 	servers []*ZoneServer
 }
@@ -32,7 +34,6 @@ func NewNameServer(conf *ServerConf) (*NameServer, error) {
 		zs := &ZoneServer{}
 		zs.zone = z
 		zs.roundRobin = conf.RoundRobin
-		zs.checker = z.Checker
 
 		txt, err := ReadTxt(z.File)
 		if err != nil {
