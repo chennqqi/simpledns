@@ -1,26 +1,33 @@
-FROM sort/alpinego
+FROM golang:1.14.7-alpine3.12 as builder
+
+RUN apk add build-base git musl-dev
+
+WORKDIR /src/simpledns
+COPY .  .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/simpledns
+
+
+
+FROM alpine3.12
 
 LABEL maintainer "https://github.com/chennqqi"
 
-COPY . /go/src/github.com/chennqqi/simpledns
+RUN mkdir -p /app && \
+	apk --update add --no-cache tzdata ca-certificates libcap && \
+	update-ca-certificates
 
-RUN apk --update add --no-cache ca-certificates
-RUN apk --update add --no-cache -t .build-deps \
-                    git \
-                    go \
-  && echo "Building simpledns docker deamon Go binary..." \
-  && export GOPATH=/go \
-  && mkdir -p /go/src/golang.org/x \
-  && cd /go/src/golang.org/x \
-  && git clone https://github.com/golang/net \
-  && cd /go/src/github.com/chennqqi/godns \
-  && go version \
-  && go get \
-  && go build -ldflags '-s -w' -o /bin/simpledns \
-  && rm -rf /go /usr/local/go /usr/lib/go /tmp/* \
-  && apk del --purge .build-deps
+COPY --from=builder /go/bin/simpledns /app/simpledns
 
-ENTRYPOINT ["simpledns"]
-#ENTRYPOINT ["su-exec","malice","/sbin/tini","--","avscan"]
+RUN	addgroup -S app && \
+	adduser app -S -G app -h /app && \
+	chown -R app:app /app && \
+	setcap cap_net_bind_service=eip /app/simpledns
+  
+WORKDIR /app
+USER app
+
+EXPOSE 53/UDP 53/TCP
+
+ENTRYPOINT [ "simpledns" ]
 CMD ["--help"]
 
