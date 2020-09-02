@@ -91,12 +91,14 @@ func (s *UpstreamServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 			logrus.Errorf("[server.go:ForwardServer.handleRequest] ExchangeConn error: %v", err)
 			s.index = (index + 1) % len(s.targets)
 		} else {
-			if s.cached && len(r.Question) >= 1 {
+			if s.cached && len(r.Question) >= 1 && len(resp.Answer) >= 1 {
 				for i := 0; i < 1; i++ {
 					q := &r.Question[i]
 					//only cache class_INET and TypeA
-					if q.Qclass == dns.ClassINET && q.Qtype == dns.TypeA {
-						s.aCache.Set(q.Name, resp.Answer, cache.DefaultExpiration)
+					var ttl = resp.Answer[i].Header().Ttl
+
+					if q.Qclass == dns.ClassINET && q.Qtype == dns.TypeA && ttl > 0 {
+						s.aCache.Set(q.Name, resp.Answer, time.Duration(ttl)*time.Second)
 					}
 				}
 			}
