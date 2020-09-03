@@ -1,14 +1,13 @@
+# build app
 FROM golang:1.14.7-alpine3.12 as builder
-
-RUN apk add build-base git musl-dev
 
 WORKDIR /src/simpledns
 COPY .  .
+
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/simpledns
 
-
-
-FROM alpine3.12
+# build runtime
+FROM alpine:3.12
 
 LABEL maintainer "https://github.com/chennqqi"
 
@@ -28,6 +27,6 @@ USER app
 
 EXPOSE 53/UDP 53/TCP
 
-ENTRYPOINT [ "simpledns" ]
-CMD ["--help"]
+ENTRYPOINT [ "/app/simpledns" ]
+#CMD [ "/app/simpledns" ]
 
