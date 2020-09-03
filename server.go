@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/chennqqi/goutils/consul"
+	"github.com/chennqqi/goutils/consul.v2"
 	"github.com/miekg/dns"
 	"github.com/sirupsen/logrus"
 )
