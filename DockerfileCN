@@ -1,0 +1,34 @@
+# build app
+FROM golang:1.14.7-alpine3.12 as builder
+
+WORKDIR /src/simpledns
+COPY .  .
+
+RUN go env -w GOPROXY=https://goproxy.cn
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/simpledns
+
+# build runtime
+FROM alpine:3.12
+
+LABEL maintainer "https://github.com/chennqqi"
+
+RUN echo "https://mirror.tuna.tsinghua.edu.cn/alpine/v3.12/main" > /etc/apk/repositories
+RUN mkdir -p /app && \
+	apk --update add --no-cache tzdata ca-certificates libcap && \
+	update-ca-certificates
+
+COPY --from=builder /go/bin/simpledns /app/simpledns
+
+RUN	addgroup -S app && \
+	adduser app -S -G app -h /app && \
+	chown -R app:app /app && \
+	setcap cap_net_bind_service=eip /app/simpledns
+  
+WORKDIR /app
+USER app
+
+EXPOSE 53/UDP 53/TCP
+
+ENTRYPOINT [ "/app/simpledns" ]
+#CMD [ "/app/simpledns" ]
+

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/chennqqi/goutils/consul.v2"
@@ -10,7 +11,9 @@ import (
 )
 
 type Server struct {
-	server  *dns.Server
+	tcpServer *dns.Server
+	udpServer *dns.Server
+
 	c       *consul.ConsulApp
 	watcher *Watcher
 	upStop  chan struct{}
@@ -19,11 +22,24 @@ type Server struct {
 func (s *Server) Init(cfg *Config) error {
 	ms := make(map[string]DomainNameServer)
 	var watchValues []NameValue
-	server := &dns.Server{
+	udpServer := &dns.Server{
 		// Address to listen on, ":dns" if empty.
 		Addr: cfg.Addr, //""
 		// if "tcp" or "tcp-tls" (DNS over TLS) it will invoke a TCP listener, otherwise an UDP one
 		Net: "udp",
+
+		// The net.Conn.SetReadTimeout value for new connections, defaults to 2 * time.Second.
+		ReadTimeout: 5 * time.Second,
+		// The net.Conn.SetWriteTimeout value for new connections, defaults to 2 * time.Second.
+		WriteTimeout: 5 * time.Second,
+		//	ReusePort bool
+	}
+
+	tcpServer := &dns.Server{
+		// Address to listen on, ":dns" if empty.
+		Addr: cfg.Addr, //""
+		// if "tcp" or "tcp-tls" (DNS over TLS) it will invoke a TCP listener, otherwise an UDP one
+		Net: "tcp",
 
 		// The net.Conn.SetReadTimeout value for new connections, defaults to 2 * time.Second.
 		ReadTimeout: 5 * time.Second,
@@ -77,7 +93,9 @@ func (s *Server) Init(cfg *Config) error {
 	}
 
 	s.watcher = watcher
-	s.server = server
+	s.udpServer = udpServer
+	s.tcpServer = tcpServer
+
 	s.upStop = make(chan struct{})
 	//new watcher
 	return nil
@@ -111,13 +129,49 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		<-s.upStop
 	}()
 	s.watcher.Stop()
-	return s.server.ShutdownContext(ctx)
+
+	var err1, err2 error
+	if s.tcpServer != nil {
+		err1 = s.tcpServer.ShutdownContext(ctx)
+	}
+	if s.udpServer != nil {
+		err2 = s.udpServer.ShutdownContext(ctx)
+	}
+	if err1 != nil {
+		return err1
+	}
+	return err2
 }
 
 func (s *Server) Run() error {
 	go s.update()
 	go s.watcher.Run()
 
-	server := s.server
-	return server.ListenAndServe()
+	var (
+		wg         sync.WaitGroup
+		err1, err2 error
+	)
+
+	{
+		server := s.udpServer
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			err1 = server.ListenAndServe()
+		}()
+	}
+	{
+		server := s.tcpServer
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			err2 = server.ListenAndServe()
+		}()
+	}
+	wg.Wait()
+
+	if err1 != nil {
+		return err1
+	}
+	return err2
 }
