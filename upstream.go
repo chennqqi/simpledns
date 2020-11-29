@@ -18,6 +18,7 @@ type UpstreamServer struct {
 	cached      bool
 	cacheExpire time.Duration
 	aCache      *cache.Cache
+	client      *dns.Client
 }
 
 func NewUpstream(targets []string, cachedExpire time.Duration) (*UpstreamServer, error) {
@@ -45,6 +46,14 @@ func NewUpstream(targets []string, cachedExpire time.Duration) (*UpstreamServer,
 		c := cache.New(cachedExpire, 2*cachedExpire)
 		up.aCache = c
 	}
+	client := &dns.Client{
+		Net:          "udp",
+		UDPSize:      1024,
+		DialTimeout:  3 * time.Second,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
+	}
+	up.client = client
 	return &up, nil
 }
 
@@ -86,7 +95,7 @@ func (s *UpstreamServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	index := s.index
 	for retry := 0; retry < len(s.targets); retry++ {
 		addr := s.targets[index]
-		resp, err := dns.Exchange(r, addr)
+		resp, _, err := s.client.Exchange(r, addr)
 		if err != nil {
 			logrus.Errorf("[server.go:ForwardServer.handleRequest] ExchangeConn error: %v", err)
 			s.index = (index + 1) % len(s.targets)
